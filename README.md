@@ -36,6 +36,8 @@ The Celery client is the producer which adds a new task to the queue via the mes
 
 In terms of tools, RabbitMQ is arguably the better choice for a message broker since it supports AMQP (Advanced Message Queuing Protocol) while Redis is fine as your result backend.
 
+To up redis: `podman run -p 6379:6379 --name some-redis -d redis`
+
 ## How Celery Works
 ![alt text](images/celery_schematics.png)
 
@@ -58,3 +60,41 @@ Flower is a real-time web application monitoring and administration tool for Cel
 ```sh
 celery -A main.celery flower --port=5555
 ```
+
+## Alembic
+Alembic is a database migration tool for Python. In this case, we are using SQLite to create the database.
+
+`alembic init alembic` initiates the service
+
+`alembic revision --autogenerate` creates the files to migrate the database
+
+`alembic upgrade head` creates the tables
+
+To interact with the database:
+
+```python
+>>> from main import app
+>>> from project.database import SessionLocal
+>>> from project.users.models import User
+
+>>> user = User(username='test1', email='test1@example.com')
+>>> session = SessionLocal()
+>>> session.add(user)
+>>> session.commit()
+>>>
+>>> new_session = SessionLocal()
+>>> new_session.query(User).first().username
+'test1'
+
+>>> exit()
+```
+
+# TL;DR commands
+Create and use a venv:
+```sh
+$ python3.11 -m venv venv
+$ source venv/bin/activate
+(venv)$
+```
+
+Run uvcorn locally: `uvicorn main:app --reload`
