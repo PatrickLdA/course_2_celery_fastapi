@@ -89,6 +89,67 @@ To interact with the database:
 >>> exit()
 ```
 
+# Docker
+To enter the shell of a specific container that's up and running, run the following command:
+
+```sh
+$ docker compose exec <service-name> bash
+
+# for example:
+# docker compose exec web bash
+```
+
+## End to end of a task
+Let's test things out by entering the Python `shell` of the running web service:
+
+```sh
+$ docker compose exec web python
+```
+
+Thn, run the following code:
+
+```python
+>>> from main import app
+>>> from project.users.tasks import divide
+>>>
+>>> divide.delay(1, 2)
+<AsyncResult: decba749-8f7e-49b3-9d40-62da39298fef>
+```
+
+Take note of the task ID (`decba749-8f7e-49b3-9d40-62da39298fef` in the above case).
+
+Open a new terminal window, navigate to the project directory, and view the logs of the Celery worker:
+
+```sh
+$ docker compose logs celery_worker
+```
+
+You should see something similar to:
+
+```sh
+fastapi-celery-project-celery_worker-1  | [2024-01-04 09:07:54,431: INFO/MainProcess] Task project.users.tasks.divide[decba749-8f7e-49b3-9d40-62da39298fef] received
+fastapi-celery-project-celery_worker-1  | [2024-01-04 09:07:59,443: INFO/ForkPoolWorker-16] Task project.users.tasks.divide[decba749-8f7e-49b3-9d40-62da39298fef] succeeded in 5.009163563023321s: 0.5
+```
+
+In the first window, exit from the shell.
+
+Now, let's enter shell of the redis service:
+
+```sh
+$ docker compose exec redis sh
+```
+
+We used sh since bash is not available in this container.
+
+Next, using the task ID from above, let's see the task result directly from Redis:
+
+```sh
+$ redis-cli
+127.0.0.1:6379> MGET celery-task-meta-decba749-8f7e-49b3-9d40-62da39298fef
+
+1) "{\"status\": \"SUCCESS\", \"result\": 0.5, \"traceback\": null, \"children\": [], \"date_done\": \"2024-01-04T09:07:59.437565\", \"task_id\": \"decba749-8f7e-49b3-9d40-62da39298fef\"}"
+```
+
 # TL;DR commands
 Create and use a venv:
 ```sh
