@@ -150,6 +150,19 @@ $ redis-cli
 1) "{\"status\": \"SUCCESS\", \"result\": 0.5, \"traceback\": null, \"children\": [], \"date_done\": \"2024-01-04T09:07:59.437565\", \"task_id\": \"decba749-8f7e-49b3-9d40-62da39298fef\"}"
 ```
 
+# Third-party services
+To make a notification service over email:
+1. You'll want to use JavaScript to hijack the form submission and then send the data to the server via an AJAX request.
+2. Within the FastAPI view, enqueue a new task (which takes the submitted email and calls the external API) and return the task ID in the response back to the client.
+3. You'll then use that task ID to continue to check the state of the task via another AJAX request.
+4. When the task finishes, you should then display the appropriate message based on whether the task succeeds or fails.
+
+![alt text](images/celery_third_party_service_post.png)
+
+## Handling webhooks
+![alt text](images/celery_third_party_service_webhook.png)
+
+
 # TL;DR commands
 Create and use a venv:
 ```sh
